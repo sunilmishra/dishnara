@@ -1,0 +1,49 @@
+package com.codewithmisu.dishnara.recipe
+
+import kotlinx.serialization.Serializable
+
+@Serializable
+data class RecipeDTO(
+    val recipes: List<RecipeContent>, val total: Int, val skip: Int, val limit: Int
+)
+
+@Serializable
+data class RecipeContent(
+    val id: Int,
+    val name: String,
+    val ingredients: List<String>,
+    val instructions: List<String>,
+    val prepTimeMinutes: Int,
+    val cookTimeMinutes: Int,
+    val servings: Int,
+    val difficulty: String,
+    val cuisine: String,
+    val caloriesPerServing: Int,
+    val tags: List<String>,
+    val userId: Int,
+    val image: String,
+    val rating: Double,
+    val reviewCount: Int,
+    val mealType: List<String>
+)
+
+fun RecipeContent.toEntity(): RecipeEntity {
+    return RecipeEntity(
+        id = id,
+        name = name,
+        ingredients = ingredients,
+        instructions = instructions,
+        prepTimeMinutes = prepTimeMinutes,
+        cookTimeMinutes = cookTimeMinutes,
+        servings = servings,
+        difficulty = difficulty,
+        cuisine = cuisine,
+        caloriesPerServing = caloriesPerServing,
+        tags = tags,
+        userId = userId,
+        image = image,
+        rating = rating,
+        reviewCount = reviewCount,
+        mealType = mealType,
+    )
+}
