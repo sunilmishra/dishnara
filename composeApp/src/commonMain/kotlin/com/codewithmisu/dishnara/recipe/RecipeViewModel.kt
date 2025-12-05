@@ -24,13 +24,11 @@ class RecipeViewModel(val repository: RecipeRepository) : ViewModel() {
     private var _uiState = MutableStateFlow(RecipeUiState())
     val uiState = _uiState.asStateFlow()
 
-
-    var cursorCount = 0
-
     init {
         loadRecipes()
     }
 
+    /// Load Recipes
     fun loadRecipes(forceRefresh: Boolean = false) {
         viewModelScope.launch {
             try {
@@ -39,11 +37,7 @@ class RecipeViewModel(val repository: RecipeRepository) : ViewModel() {
                 } else {
                     _uiState.emit(RecipeUiState(loading = true))
                 }
-                delay(2000)
                 val entities = repository.getAll(forceRefresh)
-
-                /// Number of recipe loaded first time
-                cursorCount = entities.size
 
                 _uiState.emit(
                     RecipeUiState(
@@ -63,6 +57,25 @@ class RecipeViewModel(val repository: RecipeRepository) : ViewModel() {
                     )
                 )
             }
+        }
+    }
+
+    /// Loading more on Scrolling
+    fun loadMore(skip: Int) {
+        viewModelScope.launch {
+            _uiState.emit(
+                _uiState.value.copy(
+                    loadMore = true
+                )
+            )
+            delay(500)
+            val entities = repository.getAll(skip = skip)
+            _uiState.emit(
+                _uiState.value.copy(
+                    loadMore = false,
+                    recipes = entities
+                )
+            )
         }
     }
 }

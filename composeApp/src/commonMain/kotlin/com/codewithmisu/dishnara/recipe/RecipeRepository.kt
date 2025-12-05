@@ -5,6 +5,7 @@ interface RecipeRepository {
         forceRefresh: Boolean = false,
         skip: Int = 0,
         limit: Int = 30,
+        total: Int = 50
     ): List<RecipeEntity>
 
     suspend fun getRecipe(id: Int): RecipeEntity?
@@ -14,16 +15,8 @@ class RecipeRepositoryImp(
     val remoteSource: RecipeRemoteSource, val dao: RecipeDao
 ) : RecipeRepository {
 
-    var totalCount: Int = 30
-    var limit: Int = 30;
-    var skip: Int = 0;
-
-    private suspend fun fetchAndSaveRecipes() {
+    private suspend fun fetchAndSaveRecipes(skip: Int, limit: Int) {
         val recipeDTO = remoteSource.fetchRecipes(skip = skip, limit = limit)
-        totalCount = recipeDTO.total
-        limit = recipeDTO.limit
-        skip = recipeDTO.skip
-
         val entities = mutableListOf<RecipeEntity>()
         for (recipe in recipeDTO.recipes) {
             val entity = recipe.toEntity()
@@ -37,10 +30,11 @@ class RecipeRepositoryImp(
         forceRefresh: Boolean,
         skip: Int,
         limit: Int,
+        total: Int
     ): List<RecipeEntity> {
         var entities = dao.getAll()
-        if (entities.size <= totalCount || forceRefresh) {
-            fetchAndSaveRecipes()
+        if (entities.size < total || forceRefresh) {
+            fetchAndSaveRecipes(skip, limit)
             entities = dao.getAll()
         }
         println("Recipes GetAll: ${entities.size}")

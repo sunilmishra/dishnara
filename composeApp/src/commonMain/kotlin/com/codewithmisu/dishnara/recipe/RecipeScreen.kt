@@ -10,7 +10,9 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccessAlarm
@@ -27,8 +29,10 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
@@ -36,6 +40,7 @@ import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import com.codewithmisu.dishnara.components.CustomRatingBar
 import com.codewithmisu.dishnara.components.LoadingIndicator
+import kotlinx.coroutines.flow.distinctUntilChanged
 import org.koin.compose.viewmodel.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -45,7 +50,21 @@ fun RecipeListScreen(onItemClick: (Int) -> Unit) {
     val viewModel = koinViewModel<RecipeViewModel>()
 
     val uiState by viewModel.uiState.collectAsState()
+
     val pullDownRefreshState = rememberPullToRefreshState()
+
+    /// Infinite Scrolling by Loading more
+    val scrollState = rememberLazyListState()
+    LaunchedEffect(scrollState) {
+        snapshotFlow { scrollState.firstVisibleItemIndex + scrollState.layoutInfo.visibleItemsInfo.size }
+            .distinctUntilChanged()
+            .collect { visibleItemsCount ->
+                val recipeCount = uiState.recipes.size
+                if (visibleItemsCount >= recipeCount - 1 && !uiState.loadMore) {
+                    viewModel.loadMore(recipeCount)
+                }
+            }
+    }
 
     Scaffold(
         topBar = {
@@ -81,10 +100,12 @@ fun RecipeListScreen(onItemClick: (Int) -> Unit) {
                 },
             ) {
                 RecipeList(
+                    scrollState,
                     uiState.recipes,
                     onItemClick = {
                         onItemClick(it)
                     },
+                    uiState.loadMore
                 )
             }
         }
@@ -92,8 +113,14 @@ fun RecipeListScreen(onItemClick: (Int) -> Unit) {
 }
 
 @Composable
-private fun RecipeList(recipes: List<RecipeEntity>, onItemClick: (id: Int) -> Unit) {
+private fun RecipeList(
+    lazyListState: LazyListState,
+    recipes: List<RecipeEntity>,
+    onItemClick: (id: Int) -> Unit,
+    isLoadingMore: Boolean = false,
+) {
     LazyColumn(
+        state = lazyListState,
         verticalArrangement = Arrangement.spacedBy(16.dp),
         contentPadding = PaddingValues(8.dp)
     ) {
@@ -161,5 +188,9 @@ private fun RecipeList(recipes: List<RecipeEntity>, onItemClick: (id: Int) -> Un
                 )
             }
         }
+        if (isLoadingMore)
+            item {
+                LoadingIndicator()
+            }
     }
 }
