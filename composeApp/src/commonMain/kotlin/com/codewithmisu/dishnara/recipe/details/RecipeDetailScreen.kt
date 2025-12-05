@@ -19,22 +19,19 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
-import com.codewithmisu.dishnara.recipe.RecipeRepository
+import org.koin.compose.viewmodel.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun RecipeDetailScreen(id: Int, repository: RecipeRepository, onBack: () -> Unit) {
+fun RecipeDetailScreen(id: Int, onBack: () -> Unit) {
 
-    val viewModel = remember {
-        RecipeDetailViewModel(repository)
-    }
+    val viewModel = koinViewModel<RecipeDetailViewModel>()
 
     LaunchedEffect(Unit) { // 'Unit' ensures the effect runs only once
         viewModel.loadRecipeDetail(id)

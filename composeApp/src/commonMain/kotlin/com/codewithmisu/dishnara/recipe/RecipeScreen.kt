@@ -33,18 +33,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import coil3.compose.AsyncImage
 import com.codewithmisu.dishnara.components.CustomRatingBar
 import com.codewithmisu.dishnara.components.LoadingIndicator
+import org.koin.compose.viewmodel.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun RecipeListScreen(repository: RecipeRepository, onItemClick: (Int) -> Unit) {
+fun RecipeListScreen(onItemClick: (Int) -> Unit) {
 
-    val viewModel = viewModel {
-        RecipeViewModel(repository)
-    }
+    val viewModel = koinViewModel<RecipeViewModel>()
 
     val uiState by viewModel.uiState.collectAsState()
     val pullDownRefreshState = rememberPullToRefreshState()

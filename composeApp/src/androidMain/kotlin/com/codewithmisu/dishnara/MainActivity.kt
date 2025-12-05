@@ -12,7 +12,7 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             val databaseBuilder = getDatabaseBuilder(applicationContext)
-            App(databaseBuilder)
+            App()
         }
     }
 }

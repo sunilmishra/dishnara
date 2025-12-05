@@ -63,6 +63,11 @@ kotlin {
 
             implementation(libs.compose.navigation3.ui)
             implementation(libs.compose.lifecycle.viewmodel.nav3)
+
+            implementation(libs.koin.core)
+            implementation(libs.koin.compose)
+            implementation(libs.koin.compose.viewmodel)
+
         }
         iosMain.dependencies {
             implementation(libs.ktor.client.darwin)
